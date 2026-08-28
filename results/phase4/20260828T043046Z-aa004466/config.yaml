@@ -1,0 +1,44 @@
+master_seed: 2645751
+max_wall_time: 600
+max_memory: 8GB
+max_candidates: 1000
+max_exact_states: 1000000
+beta_max: 30
+enumeration_node_limit: 100000
+calibration_seeds:
+- 7101
+confirmation_seeds:
+- 8101
+bootstrap_seed: 9985
+phase2_comparisons: AUTO_LATEST
+finite_estimator_grid:
+- name: coded_dual_like_r3
+  n: 512
+  m: 512
+  q: 3329
+  r: 3
+  r_elim: 3
+  prior: ternary
+  H_class: coded_dual_G_transpose
+  baseline: norm_aware
+  candidate_backend: calibrated_toy_model
+  beta: 60
+  list_budget: 1000000
+  stage1_log2_work: 130.0
+  standard_residual_log2_work: 126.0
+  within_empirical_range: false
+- name: synthetic_dense_toy
+  n: 24
+  m: 24
+  q: 97
+  r: 2
+  r_elim: 2
+  prior: ternary
+  H_class: dense_random
+  baseline: norm_aware
+  candidate_backend: measured_backend
+  beta: 20
+  list_budget: 1000
+  stage1_log2_work: 12.0
+  standard_residual_log2_work: 14.0
+  within_empirical_range: true

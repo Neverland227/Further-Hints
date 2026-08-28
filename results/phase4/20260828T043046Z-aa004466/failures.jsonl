@@ -1,0 +1,2 @@
+{"classification": "UNAVAILABLE", "component": "empirical_calibration", "reason": "Phase 2 comparisons not found"}
+{"classification": "UNAVAILABLE", "component": "current_working_paper_estimator_direct_adapter", "reason": "no stable callable API was identified in this repository; finite common-prefix integration is reported separately and not renamed as the paper estimator"}
