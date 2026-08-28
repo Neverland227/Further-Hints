@@ -1,0 +1,25 @@
+master_seed: 271828
+max_wall_time: 300
+max_memory: 2GB
+max_candidates: 500
+max_exact_states: 100000
+beta_max: 30
+enumeration_node_limit: 10000
+calibration_seeds: [1001]
+confirmation_seeds: [2001]
+eligible_for_gate: false
+smoke: true
+n: [24]
+q: [17, 31]
+priors: [ternary, cbd2]
+all_r: false
+r_max: 4
+r_fraction_max: 0.20
+r_explicit: [1, 2, 3, 4]
+r_fractions: []
+m_over_n: 1.0
+analytic_baseline_beta: 60
+sieve_dimension_proxy: 50
+heuristic_beta_cost_slope: 0.292
+predicate_overhead_bits: 0.05
+toy_n_max: 64
