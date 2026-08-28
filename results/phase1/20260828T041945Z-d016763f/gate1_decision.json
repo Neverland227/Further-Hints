@@ -1,0 +1,18 @@
+{
+  "gate": "Gate 1",
+  "eligible_run": false,
+  "status": "NOT_EVALUATED_SMOKE",
+  "b2_groups": 0,
+  "b2_unavailable": false,
+  "b2_failure_count": 0,
+  "b2_H_classes": 0,
+  "b2_true_candidate_presence_rate_min": null,
+  "b2_true_retention_conditional": null,
+  "theoretical_true_retention_of_exact_predicate": 1.0,
+  "requires_phase_minus1_consistency": true,
+  "phase_minus1_gate_verified": false,
+  "phase_minus1_decision": null,
+  "headline_proxy_excluded": true,
+  "rule": "measurable B2/B4 marginal selectivity, true retention, structured-H quantification, and Phase -1 direction",
+  "gate0_decision": "D:\\Further Hints\\research\\affine_prior\\results\\phase0\\20260828T041933Z-0eb29265\\gate0_decision.json"
+}
