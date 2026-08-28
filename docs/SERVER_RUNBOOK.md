@@ -26,7 +26,7 @@ The preflight should report `ready_for_core=true` and
 `ready_for_phase2=true`. The latter requires fpylll. Do not substitute Sage for
 missing fpylll.
 
-With fpylll installed, the four locally skipped MN/enumeration tests must execute;
+With fpylll installed, all ten locally skipped MN/enumeration tests must execute;
 do not start B2 if the test run still reports an fpylll-related skip or failure.
 
 ## 2. Resource allocation
@@ -36,6 +36,11 @@ do not start B2 if the test run still reports an fpylll-related skip or failure.
 - B2 geometry calibration, formal B2, and Phase 2: 6 workers, one task per
   process, 10 GiB address-space cap per worker, a 600-second task alarm for
   B2, and a hard enumeration node limit.
+- One-shot Gate-1c audit and confirmation: 16 workers, one task per fresh
+  process, 6 GiB address-space cap per worker, a 600-second task alarm, and a
+  hard enumeration node limit. The 96 GiB aggregate theoretical cap leaves
+  headroom on the 128 GiB host; process recycling releases fpylll state after
+  every instance.
 - Sage: disabled. If a later isolated check genuinely needs Sage, use at most 4
   concurrent processes, one task per process, 12 GiB/process, 600 seconds, and
   discard the process after that one task. Never run a long-lived Sage pool.
@@ -54,6 +59,10 @@ Frozen workload bounds:
   8 frozen geometries, and 5 calibration seeds);
 - formal B2 Gate-1b: 120 one-process lattice tasks, launched separately only
   after one geometry passes the calibration rule;
+- Gate-1c correctness audit: exactly 40 tasks (4 regimes, 2 already exposed
+  complete radii, and 5 exposed seeds);
+- Gate-1c held-out confirmation: exactly 120 tasks (4 regimes and 30 reserved
+  seeds), generated and launched separately only after all 40 audit tasks pass;
 - Phase 2: 320 calibration tasks, then at most 200 confirmation tasks.
 
 The Phase-2 grid is intentionally finite: 2 beta values, 1 scaling value, 2
@@ -80,13 +89,39 @@ Inspect `geometry_selection.json` and `geometry_summary.csv` in the printed
 run directory. If the status is `SELECTED`, run the command recorded in that
 directory's `RUN_NEXT.md`; it uses the generated, frozen `gate1b_config.yaml`.
 Do not edit that YAML after seeing formal output. If the status is
-`NO_ELIGIBLE_GEOMETRY`, stop and do not enlarge the grid.
+`NO_ELIGIBLE_GEOMETRY`, the legacy raw-vector protocol remains stopped and its
+grid must not be enlarged. The only authorized follow-up is the one-shot
+Gate-1c revision below.
+
+Run the backend audit first:
+
+```bash
+python experiments/phase1c_backend_audit.py \
+  --config configs/phase1/gate1c_backend_audit.yaml
+```
+
+Inspect `backend_audit_decision.json` and `audit_summary.csv` in the printed
+directory. `FAIL_BACKEND_EQUIVALENCE` or `BLOCKED_AUDIT_INCOMPLETE` is a hard
+`STOP_CURRENT_PROTOCOL`; do not expose seeds 6501--6530. An all-pass audit
+writes `gate1c_confirmation_config.yaml`, binds the decision by SHA-256, and
+writes the only permitted held-out command to `RUN_CONFIRMATION.md`. Launch
+that command separately and only once. The confirmation uses nested
+`K={16,32,64,128}` with primary `K=128`; final radii may differ by instance,
+but every containing ball must be complete. Any node, time, memory, or raw
+slice-vector guard hit is censoring and blocks the Gate rather than returning
+a prefix.
+
+After Gate-1c, inspect `gate1c_decision.json`. Even `PASS` means only stable
+marginal selectivity. It permits a newly preregistered, reoptimized work-frontier
+study; it does not permit the existing Phase-2 command below to be run unchanged
+and does not establish expected-work gain.
 
 The earlier `configs/phase1/b2_gate_toy.yaml` is retained only for historical
 reproduction; it is not the new formal protocol.
 
-After the separately launched formal B2 run, inspect its
-`gate1_decision.json`. Run Phase 2 only if its status is exactly `PASS`:
+If the legacy geometry stage had instead selected a formal Gate-1b run, inspect
+that run's `gate1_decision.json`. Only that legacy Gate-1b path may use the
+existing Phase-2 command, and only when its status is exactly `PASS`:
 
 ```bash
 python experiments/phase2_lattice.py --config configs/phase2/toy_confirmation.yaml
@@ -130,6 +165,11 @@ python experiments/phase1_b2_geometry.py \
   --resume results/phase1_geometry/<run_id>
 ```
 
+Gate-1c audit and confirmation use the same pattern with their own printed
+`results/phase1c_audit/<run_id>` or `results/phase1c/<run_id>` directory. Resume
+the original generated YAML; never create a second held-out run after a partial
+confirmation.
+
 The same `--resume` option exists for all phase scripts. Geometry, Phase 1,
 and Phase 2 skip checkpointed task IDs; Phase 2 never reselects confirmation
 parameters after `confirmation_preregistration.json` exists.
@@ -146,7 +186,15 @@ parameters after `confirmation_preregistration.json` exists.
   candidates: Gate 1 is `BLOCKED_B2_UNDERPOWERED`.
 - No geometry satisfying the frozen completeness, truth-presence, and
   false-candidate requirements across all four regimes: stop before formal
-  Gate 1b and do not add new parameter points after observing the result.
+  Gate 1b and do not add new legacy parameter points after observing the result.
+- Any Gate-1c legacy/constrained set or canonical-score mismatch: stop the
+  constrained backend before confirmation.
+- Any incomplete Gate-1c containing ball: `BLOCKED_BACKEND_CENSORED`; do not
+  interpret the available prefix or rerun with a larger budget.
+- Certified top-K true-presence or true-retention below 100%: stop on scientific
+  validity rather than estimating alpha from the remaining lists.
+- Gate-1c `FAIL_NO_MARGINAL_EFFECT`: stop the tested certified-top-K idea; this
+  label is valid only after complete, powered, precise held-out measurement.
 - No norm-aware marginal information: write STOP and do not enlarge beta,
   radius, dimension, or worker count.
 - No confirmed total expected-work improvement: keep the result as STOP or a

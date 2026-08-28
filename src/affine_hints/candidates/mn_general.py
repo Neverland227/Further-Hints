@@ -15,6 +15,7 @@ from typing import Any, Sequence
 
 import numpy as np
 
+from ..modular import centered_lift, centered_vector
 from .base import CandidateList
 
 
@@ -24,6 +25,14 @@ class BackendUnavailable(RuntimeError):
 
 class SublatticeConstructionFailed(RuntimeError):
     """Raised when Algorithm 1's zero-block check fails."""
+
+
+class CertifiedTopKUnavailable(RuntimeError):
+    """Raised when a constrained candidate ball cannot certify the requested K."""
+
+    def __init__(self, message: str, metadata: dict[str, Any]):
+        super().__init__(message)
+        self.metadata = metadata
 
 
 def bounded_schnorr_euchner(
@@ -125,6 +134,155 @@ def bounded_schnorr_euchner(
         "enumeration_complete_within_bounds": not node_limit_reached and not solution_budget_reached,
         "enumerated_exact_norms": [exact_norms[index] for index in order],
         "enumeration_label": "PROJECT_DERIVATION / bounded Schnorr-Euchner traversal",
+    }
+
+
+def bounded_cvp_schnorr_euchner(
+    basis: Sequence[Sequence[int]],
+    *,
+    offset: Sequence[int],
+    radius_squared: float,
+    max_slice_vectors: int,
+    node_limit: int,
+    fixed_embedding_coordinate: int = -1,
+) -> tuple[list[tuple[int, ...]], dict[str, Any]]:
+    """Completely enumerate one affine embedding slice within a norm ball.
+
+    ``basis`` generates the homogeneous ``t=0`` slice and ``offset`` is one
+    public point in the requested affine slice.  The traversal enumerates
+    lattice points ``offset + z*basis`` and appends one fixed embedding
+    coordinate.  A raw-vector cap remains only as a resource guard: hitting it
+    marks the ball incomplete and therefore unusable for certified top-K.
+    """
+
+    try:
+        from fpylll import GSO, IntegerMatrix
+    except ImportError as exc:
+        raise BackendUnavailable("fpylll is required for bounded CVP enumeration") from exc
+    if radius_squared < fixed_embedding_coordinate * fixed_embedding_coordinate:
+        return [], {
+            "enumeration_nodes": 0,
+            "enumeration_node_limit": int(node_limit),
+            "enumeration_node_limit_reached": False,
+            "enumeration_slice_vector_limit": int(max_slice_vectors),
+            "enumeration_slice_vector_limit_reached": False,
+            "enumeration_complete_within_bounds": True,
+            "raw_slice_vector_count": 0,
+            "enumerated_exact_norms": [],
+            "enumeration_label": "PROJECT_DERIVATION / constrained affine-slice CVP traversal",
+        }
+    if max_slice_vectors <= 0 or node_limit <= 0:
+        raise ValueError("slice-vector and node limits must be positive")
+    rows = [[int(value) for value in row] for row in basis]
+    affine_offset = [int(value) for value in offset]
+    if not rows or any(len(row) != len(affine_offset) for row in rows):
+        raise ValueError("constrained basis and offset dimensions differ")
+    if len(rows) != len(affine_offset):
+        raise ValueError("constrained slice basis must be square and full rank")
+    integer_basis = IntegerMatrix.from_matrix(rows)
+    gso = GSO.Mat(integer_basis)
+    if not gso.update_gso():
+        raise RuntimeError("GSO update failed for constrained slice")
+    dimension = len(rows)
+    norms = [float(gso.get_r(i, i)) for i in range(dimension)]
+    if any(not math.isfinite(value) or value <= 0 for value in norms):
+        raise RuntimeError("invalid constrained-slice GSO diagonal")
+    mu = [[0.0] * dimension for _ in range(dimension)]
+    gram_schmidt_rows: list[list[float]] = []
+    for i in range(dimension):
+        for j in range(i):
+            mu[i][j] = float(gso.get_mu(i, j))
+        vector = [float(value) for value in rows[i]]
+        for j in range(i):
+            coefficient = mu[i][j]
+            for coordinate in range(dimension):
+                vector[coordinate] -= coefficient * gram_schmidt_rows[j][coordinate]
+        gram_schmidt_rows.append(vector)
+    target = [-value for value in affine_offset]
+    target_coordinates = [
+        sum(target[j] * gram_schmidt_rows[i][j] for j in range(dimension)) / norms[i]
+        for i in range(dimension)
+    ]
+    coefficients = [0] * dimension
+    solutions: list[tuple[int, ...]] = []
+    exact_norms: list[int] = []
+    nodes = 0
+    node_limit_reached = False
+    slice_vector_limit_reached = False
+    variable_radius_squared = (
+        float(radius_squared) - fixed_embedding_coordinate * fixed_embedding_coordinate
+    )
+    search_slack = 1e-9 * max(1.0, float(radius_squared))
+    exact_acceptance_radius_squared = float(radius_squared) * (1.0 + 1e-12)
+
+    def ordered_integers(center: float, maximum_deviation: float):
+        nearest = int(round(center))
+        maximum_offset = int(math.floor(maximum_deviation)) + 2
+        yielded: set[int] = set()
+        for delta in range(maximum_offset + 1):
+            candidates = (nearest,) if delta == 0 else (nearest + delta, nearest - delta)
+            for value in candidates:
+                if value in yielded:
+                    continue
+                yielded.add(value)
+                if abs(value - center) <= maximum_deviation + 1e-12:
+                    yield value
+
+    def recurse(level: int, partial_norm: float) -> None:
+        nonlocal nodes, node_limit_reached, slice_vector_limit_reached
+        if node_limit_reached or slice_vector_limit_reached:
+            return
+        if level < 0:
+            affine = tuple(
+                affine_offset[j]
+                + sum(coefficients[i] * rows[i][j] for i in range(dimension))
+                for j in range(dimension)
+            )
+            vector = affine + (int(fixed_embedding_coordinate),)
+            norm2 = sum(value * value for value in vector)
+            if norm2 <= exact_acceptance_radius_squared:
+                solutions.append(vector)
+                exact_norms.append(norm2)
+                if len(solutions) >= max_slice_vectors:
+                    slice_vector_limit_reached = True
+            return
+        remaining = variable_radius_squared - partial_norm
+        if remaining < -search_slack:
+            return
+        center = target_coordinates[level] - sum(
+            coefficients[j] * mu[j][level] for j in range(level + 1, dimension)
+        )
+        deviation = math.sqrt(max(0.0, (remaining + search_slack) / norms[level]))
+        for value in ordered_integers(center, deviation):
+            if nodes >= node_limit:
+                node_limit_reached = True
+                return
+            nodes += 1
+            coefficients[level] = value
+            component = value - center
+            recurse(level - 1, partial_norm + component * component * norms[level])
+            if node_limit_reached or slice_vector_limit_reached:
+                return
+        coefficients[level] = 0
+
+    recurse(dimension - 1, 0.0)
+    order = sorted(
+        range(len(solutions)),
+        key=lambda index: (exact_norms[index], solutions[index]),
+    )
+    complete = not node_limit_reached and not slice_vector_limit_reached
+    return [solutions[index] for index in order], {
+        "enumeration_nodes": nodes,
+        "enumeration_node_limit": int(node_limit),
+        "enumeration_node_limit_reached": node_limit_reached,
+        "enumeration_slice_vector_limit": int(max_slice_vectors),
+        "enumeration_slice_vector_limit_reached": slice_vector_limit_reached,
+        "enumeration_solution_budget_reached": slice_vector_limit_reached,
+        "enumeration_complete_within_bounds": complete,
+        "raw_slice_vector_count": len(solutions),
+        "enumerated_exact_norms": [exact_norms[index] for index in order],
+        "fixed_embedding_coordinate": int(fixed_embedding_coordinate),
+        "enumeration_label": "PROJECT_DERIVATION / constrained affine-slice CVP traversal",
     }
 
 
@@ -281,6 +439,260 @@ def construct_modular_sublattice(
     }
 
 
+def construct_constrained_slice_lattice(
+    instance: Any,
+    elimination: Any,
+) -> tuple[list[list[int]], list[int], dict[str, Any]]:
+    """Parameterize exactly the normalized ``t=-1`` MN embedding slice.
+
+    The returned square row basis generates changes preserving every modular
+    hint, while ``offset`` is one public hint-consistent affine point.  The
+    ambient coordinates are ``(A*s-b+q*k, s)``; callers append the fixed
+    embedding coordinate ``-1``.  This is an exact project derivation of the
+    relevant slice, not a prior-aware pruning rule.
+    """
+
+    if tuple(elimination.remaining_rows):
+        raise ValueError(
+            "constrained MN slice currently requires full hint elimination (r_elim=r)"
+        )
+    if len(elimination.eliminated_rows) != len(instance.H):
+        raise ValueError("constrained MN slice must account for every hint row")
+    m, n, q = int(instance.m), int(instance.n), int(instance.q)
+    pivot_indices = tuple(int(value) for value in elimination.pivot_indices)
+    residual_indices = tuple(int(value) for value in elimination.residual_indices)
+    if len(pivot_indices) + len(residual_indices) != n:
+        raise ValueError("pivot and residual coordinates do not partition the secret")
+    particular_secret = [0] * n
+    for pivot_position, coordinate in enumerate(pivot_indices):
+        particular_secret[coordinate] = centered_lift(elimination.c[pivot_position], q)
+    offset_error = [
+        sum(int(instance.A[row][column]) * particular_secret[column] for column in range(n))
+        - int(instance.b[row])
+        for row in range(m)
+    ]
+    offset = offset_error + particular_secret
+    basis: list[list[int]] = []
+
+    # Independent q-lifts of every error coordinate.
+    for row in range(m):
+        vector = [0] * (m + n)
+        vector[row] = q
+        basis.append(vector)
+
+    # Independent q-lifts of pivot secret coordinates. Their induced A*s
+    # change is included explicitly in the error block.
+    for coordinate in pivot_indices:
+        secret_delta = [0] * n
+        secret_delta[coordinate] = q
+        error_delta = [q * int(instance.A[row][coordinate]) for row in range(m)]
+        basis.append(error_delta + secret_delta)
+
+    # One generator per residual integer coordinate, with the affine pivot
+    # change represented by a centered lift of -C[:,j].
+    for residual_position, residual_coordinate in enumerate(residual_indices):
+        secret_delta = [0] * n
+        secret_delta[residual_coordinate] = 1
+        for pivot_position, pivot_coordinate in enumerate(pivot_indices):
+            secret_delta[pivot_coordinate] = centered_lift(
+                -int(elimination.C[pivot_position][residual_position]),
+                q,
+            )
+        error_delta = [
+            sum(int(instance.A[row][column]) * secret_delta[column] for column in range(n))
+            for row in range(m)
+        ]
+        basis.append(error_delta + secret_delta)
+
+    if len(basis) != m + n or any(len(row) != m + n for row in basis):
+        raise AssertionError("constrained MN slice basis must be square")
+    for row in basis[m:]:
+        secret_delta = row[m:]
+        if any(
+            sum(int(hint[column]) * secret_delta[column] for column in range(n)) % q
+            for hint in instance.H
+        ):
+            raise AssertionError("constrained slice generator violates a modular hint")
+    if any(
+        (
+            sum(int(hint[column]) * particular_secret[column] for column in range(n))
+            - int(target)
+        )
+        % q
+        for hint, target in zip(instance.H, instance.ell)
+    ):
+        raise AssertionError("constrained slice offset violates a modular hint")
+    return basis, offset, {
+        "source": "MN Section 5 embedding restricted to the normalized t=-1 slice",
+        "source_label": "LITERATURE_EXACT embedding / PROJECT_DERIVATION constrained slice",
+        "fixed_embedding_coordinate": -1,
+        "slice_dimension": m + n,
+        "ambient_embedding_dimension": m + n + 1,
+        "full_hint_elimination_required": True,
+        "truth_norm_used_for_radius": False,
+    }
+
+
+def canonical_b2_score_squared(
+    instance: Any,
+    elimination: Any,
+    residual: Sequence[int],
+) -> tuple[int, tuple[int, ...], tuple[int, ...]]:
+    """Return the canonical full-secret/error B2 score for one residual."""
+
+    full_mod = elimination.reconstruct(tuple(int(value) % instance.q for value in residual))
+    full_secret = tuple(centered_vector(full_mod, instance.q))
+    error = tuple(
+        centered_vector(
+            (
+                sum(int(instance.A[row][column]) * full_secret[column] for column in range(instance.n))
+                - int(instance.b[row])
+                for row in range(instance.m)
+            ),
+            instance.q,
+        )
+    )
+    score_squared = 1 + sum(value * value for value in full_secret) + sum(
+        value * value for value in error
+    )
+    return score_squared, full_secret, error
+
+
+def _canonicalize_constrained_slice_vectors(
+    vectors: Sequence[Sequence[int]],
+    *,
+    instance: Any,
+    elimination: Any,
+) -> tuple[list[tuple[int, ...]], list[float], dict[str, int]]:
+    """Map fixed-sign slice vectors to deterministically ordered candidates."""
+
+    best: dict[tuple[int, ...], int] = {}
+    duplicate_residuals = 0
+    representative_score_violations = 0
+    for row in vectors:
+        if len(row) != instance.m + instance.n + 1 or int(row[-1]) != -1:
+            raise ValueError("constrained slice emitted a vector outside t=-1")
+        full_mod = tuple(int(value) % instance.q for value in row[instance.m : -1])
+        residual = tuple(full_mod[index] for index in elimination.residual_indices)
+        score_squared, _, _ = canonical_b2_score_squared(instance, elimination, residual)
+        representative_norm_squared = sum(int(value) * int(value) for value in row)
+        if score_squared > representative_norm_squared:
+            representative_score_violations += 1
+        if residual in best:
+            duplicate_residuals += 1
+            best[residual] = min(best[residual], score_squared)
+        else:
+            best[residual] = score_squared
+    if representative_score_violations:
+        raise AssertionError("canonical B2 score exceeds an enumerated representative norm")
+    ordered = sorted(best, key=lambda residual: (best[residual], residual))
+    return ordered, [-float(best[residual]) for residual in ordered], {
+        "raw_slice_vector_count": len(vectors),
+        "embedding_slice_vector_count": len(vectors),
+        "duplicate_residual_count": duplicate_residuals,
+        "canonical_unique_candidate_count": len(ordered),
+        "canonical_score_violation_count": representative_score_violations,
+    }
+
+
+def _reduce_constrained_slice_basis(
+    basis: Sequence[Sequence[int]],
+    *,
+    beta: int,
+    beta_max: int,
+    reduction_seed: int,
+) -> tuple[list[list[int]], dict[str, Any]]:
+    """Reduce a homogeneous constrained-slice basis without changing its set."""
+
+    try:
+        from fpylll import BKZ, FPLLL, IntegerMatrix, LLL
+    except ImportError as exc:
+        raise BackendUnavailable("fpylll is required for constrained-slice reduction") from exc
+    if beta < 0 or beta > beta_max or beta_max > 30:
+        raise ValueError("constrained-slice BKZ beta exceeds bounded protocol")
+    integer_basis = IntegerMatrix.from_matrix([[int(value) for value in row] for row in basis])
+    normalized_seed = int(reduction_seed) % (2**31 - 1)
+    FPLLL.set_random_seed(normalized_seed)
+    started = time.monotonic()
+    LLL.reduction(integer_basis)
+    if beta:
+        BKZ.reduction(integer_basis, BKZ.Param(block_size=beta, max_loops=1))
+    elapsed = time.monotonic() - started
+    rows = [
+        [int(integer_basis[i, j]) for j in range(integer_basis.ncols)]
+        for i in range(integer_basis.nrows)
+    ]
+    return rows, {
+        "candidate_reduction_time": elapsed,
+        "reduction_seed": normalized_seed,
+        "beta": int(beta),
+        "reduction_role": "efficiency only; complete slice candidate set is basis invariant",
+    }
+
+
+def constrained_candidates_within_radius(
+    instance: Any,
+    elimination: Any,
+    *,
+    radius_squared: float,
+    beta: int,
+    beta_max: int,
+    reduction_seed: int,
+    node_limit: int,
+    max_slice_vectors: int,
+) -> CandidateList:
+    """Return a complete canonical candidate ball or an explicitly censored list."""
+
+    started = time.monotonic()
+    basis, offset, metadata = construct_constrained_slice_lattice(instance, elimination)
+    metadata["basis_time"] = time.monotonic() - started
+    reduced_basis, reduction_metadata = _reduce_constrained_slice_basis(
+        basis,
+        beta=beta,
+        beta_max=beta_max,
+        reduction_seed=reduction_seed,
+    )
+    metadata.update(reduction_metadata)
+    enumeration_started = time.monotonic()
+    vectors, enumeration_metadata = bounded_cvp_schnorr_euchner(
+        reduced_basis,
+        offset=offset,
+        radius_squared=float(radius_squared),
+        max_slice_vectors=int(max_slice_vectors),
+        node_limit=int(node_limit),
+        fixed_embedding_coordinate=-1,
+    )
+    metadata.update(enumeration_metadata)
+    metadata["enumeration_time"] = time.monotonic() - enumeration_started
+    candidates, scores, extraction_metadata = _canonicalize_constrained_slice_vectors(
+        vectors,
+        instance=instance,
+        elimination=elimination,
+    )
+    metadata.update(extraction_metadata)
+    metadata.update(
+        {
+            "baseline": "B2_MN_CONSTRAINED_SLICE",
+            "candidate_protocol": "COMPLETE_CONSTRAINED_RADIUS_BALL",
+            "enumeration_radius_squared": float(radius_squared),
+            "candidate_count": len(candidates),
+            "candidate_extraction": "fixed t=-1 slice; canonical residual and B2-score deduplication",
+            "embedding_slice_internal_constraint": True,
+            "prior_internal_pruning": False,
+            "predicate_integration": "leaf_postfilter",
+        }
+    )
+    truth = tuple(instance.s[index] % instance.q for index in elimination.residual_indices)
+    true_index = next((index for index, value in enumerate(candidates) if value == truth), None)
+    return CandidateList(
+        tuple(candidates),
+        tuple(scores),
+        true_index,
+        "MNConstrainedSliceCandidateSource",
+        metadata,
+    )
+
+
 def _extract_unique_residual_candidates(
     vectors: Sequence[Sequence[int]],
     *,
@@ -414,3 +826,174 @@ class MNGeneralCandidateSource:
             }
         )
         return CandidateList(tuple(candidates), tuple(scores), true_index, "MNGeneralCandidateSource", metadata)
+
+
+@dataclass
+class MNConstrainedTopKCandidateSource:
+    """Certified B2 top-K source on the normalized MN embedding slice.
+
+    Radius thresholds are public, finite, and configuration supplied.  The
+    first *complete* constrained ball containing at least ``K`` canonical
+    residual candidates certifies the deterministic ordering by
+    ``(canonical B2 score, residual lexicographic order)``.  A resource-limit
+    prefix is never returned as top-K evidence.
+    """
+
+    instance: Any = None
+    elimination: Any = None
+    config: dict[str, Any] | None = None
+
+    def prepare(self, instance: Any, baseline_config: dict[str, Any]) -> None:
+        self.instance = instance
+        self.elimination = baseline_config["elimination"]
+        self.config = dict(baseline_config)
+
+    def generate(self, budget: int, rng: np.random.Generator) -> CandidateList:
+        del rng
+        if self.instance is None or self.elimination is None or self.config is None:
+            raise RuntimeError("prepare must be called first")
+        if self.instance.n > int(self.config.get("max_n", 80)):
+            raise ValueError("constrained MN source is bounded to toy dimensions")
+        top_k = int(budget)
+        if top_k <= 0:
+            raise ValueError("certified top-K must be positive")
+        nested_top_k = sorted({int(value) for value in self.config.get("top_k_values", [top_k])})
+        if not nested_top_k or nested_top_k[-1] != top_k or nested_top_k[0] <= 0:
+            raise ValueError("top_k_values must be positive and end at the requested K")
+        thresholds = sorted(
+            {float(value) for value in self.config.get("score_radius_squared_grid", [])}
+        )
+        if not thresholds or thresholds[0] <= 1.0:
+            raise ValueError("a finite public score_radius_squared_grid above one is required")
+        maximum_steps = int(self.config.get("max_radius_steps", len(thresholds)))
+        if len(thresholds) > maximum_steps:
+            raise ValueError("score-radius grid exceeds the frozen step cap")
+
+        basis_started = time.monotonic()
+        basis, offset, metadata = construct_constrained_slice_lattice(
+            self.instance,
+            self.elimination,
+        )
+        metadata["basis_time"] = time.monotonic() - basis_started
+        reduced_basis, reduction_metadata = _reduce_constrained_slice_basis(
+            basis,
+            beta=int(self.config.get("beta", 0)),
+            beta_max=int(self.config.get("beta_max", 30)),
+            reduction_seed=int(self.config.get("reduction_seed", 0)),
+        )
+        metadata.update(reduction_metadata)
+        attempts: list[dict[str, Any]] = []
+        total_nodes = 0
+        total_raw_vectors = 0
+        total_enumeration_time = 0.0
+        for threshold in thresholds:
+            enumeration_started = time.monotonic()
+            vectors, enumeration_metadata = bounded_cvp_schnorr_euchner(
+                reduced_basis,
+                offset=offset,
+                radius_squared=threshold,
+                max_slice_vectors=int(self.config.get("max_slice_vectors_per_radius", 100_000)),
+                node_limit=int(self.config.get("enumeration_node_limit", 1_000_000)),
+                fixed_embedding_coordinate=-1,
+            )
+            elapsed = time.monotonic() - enumeration_started
+            candidates, scores, extraction_metadata = _canonicalize_constrained_slice_vectors(
+                vectors,
+                instance=self.instance,
+                elimination=self.elimination,
+            )
+            total_nodes += int(enumeration_metadata["enumeration_nodes"])
+            total_raw_vectors += int(enumeration_metadata["raw_slice_vector_count"])
+            total_enumeration_time += elapsed
+            attempt = {
+                "score_radius_squared": threshold,
+                "enumeration_time": elapsed,
+                **enumeration_metadata,
+                **extraction_metadata,
+            }
+            attempts.append(attempt)
+            if not bool(enumeration_metadata["enumeration_complete_within_bounds"]):
+                raise CertifiedTopKUnavailable(
+                    "RESOURCE_LIMIT: constrained candidate ball is censored before top-K certification",
+                    {
+                        **metadata,
+                        "candidate_protocol": "CERTIFIED_CONSTRAINED_TOP_K",
+                        "top_k_requested": top_k,
+                        "top_k_certified": False,
+                        "radius_attempts": attempts,
+                        "enumeration_nodes_total_across_attempts": total_nodes,
+                        "raw_slice_vectors_total_across_attempts": total_raw_vectors,
+                    },
+                )
+            if len(candidates) < top_k:
+                continue
+            selected_candidates = candidates[:top_k]
+            selected_scores = scores[:top_k]
+            truth = tuple(
+                self.instance.s[index] % self.instance.q
+                for index in self.elimination.residual_indices
+            )
+            true_index = next(
+                (index for index, candidate in enumerate(selected_candidates) if candidate == truth),
+                None,
+            )
+            metadata.update(
+                {
+                    "baseline": "B2_MN_CONSTRAINED_TOP_K",
+                    "candidate_protocol": "CERTIFIED_CONSTRAINED_TOP_K",
+                    "candidate_order": "canonical B2 score ascending, then residual lexicographic",
+                    "top_k_requested": top_k,
+                    "nested_top_k": nested_top_k,
+                    "top_k_certified": True,
+                    "certification_radius_squared": threshold,
+                    "kth_candidate_score_squared": -float(selected_scores[-1]),
+                    "canonical_unique_candidates_in_certification_ball": len(candidates),
+                    "candidate_count": len(selected_candidates),
+                    "radius_attempts": attempts,
+                    "radius_selection_uses_true_norm": False,
+                    "radius_selection_uses_prior_pass_rate": False,
+                    "enumeration_nodes": int(enumeration_metadata["enumeration_nodes"]),
+                    "enumeration_nodes_total_across_attempts": total_nodes,
+                    "raw_slice_vector_count": int(
+                        enumeration_metadata["raw_slice_vector_count"]
+                    ),
+                    "raw_slice_vectors_total_across_attempts": total_raw_vectors,
+                    "embedding_slice_vector_count": int(
+                        extraction_metadata["embedding_slice_vector_count"]
+                    ),
+                    "duplicate_residual_count": int(
+                        extraction_metadata["duplicate_residual_count"]
+                    ),
+                    "canonical_unique_candidate_count": int(
+                        extraction_metadata["canonical_unique_candidate_count"]
+                    ),
+                    "enumeration_time": total_enumeration_time,
+                    "enumeration_complete_within_bounds": True,
+                    "enumeration_node_limit_reached": False,
+                    "enumeration_solution_budget_reached": False,
+                    "candidate_extraction": "fixed t=-1 slice; canonical residual and B2-score deduplication",
+                    "embedding_slice_internal_constraint": True,
+                    "prior_internal_pruning": False,
+                    "predicate_integration": "leaf_postfilter",
+                }
+            )
+            return CandidateList(
+                tuple(selected_candidates),
+                tuple(selected_scores),
+                true_index,
+                "MNConstrainedTopKCandidateSource",
+                metadata,
+            )
+        raise CertifiedTopKUnavailable(
+            "RESOURCE_LIMIT: public radius grid ended before K unique candidates were certified",
+            {
+                **metadata,
+                "candidate_protocol": "CERTIFIED_CONSTRAINED_TOP_K",
+                "top_k_requested": top_k,
+                "top_k_certified": False,
+                "radius_attempts": attempts,
+                "enumeration_nodes_total_across_attempts": total_nodes,
+                "raw_slice_vectors_total_across_attempts": total_raw_vectors,
+                "enumeration_time": total_enumeration_time,
+            },
+        )

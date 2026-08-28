@@ -1,0 +1,147 @@
+master_seed: 8642097
+max_wall_time: 600
+max_memory: 96GB
+max_RSS: 6GB
+max_candidates: 128
+max_exact_states: 1000000
+beta_max: 30
+enumeration_node_limit: 1000000
+
+# Already exposed exploratory seeds: correctness/audit use only.
+calibration_seeds: [5501, 5502, 5503, 5504, 5505]
+
+# Still held out. The audit script only copies these into a generated formal
+# config after every equivalence check passes; it never executes them.
+confirmation_seeds:
+  - 6501
+  - 6502
+  - 6503
+  - 6504
+  - 6505
+  - 6506
+  - 6507
+  - 6508
+  - 6509
+  - 6510
+  - 6511
+  - 6512
+  - 6513
+  - 6514
+  - 6515
+  - 6516
+  - 6517
+  - 6518
+  - 6519
+  - 6520
+  - 6521
+  - 6522
+  - 6523
+  - 6524
+  - 6525
+  - 6526
+  - 6527
+  - 6528
+  - 6529
+  - 6530
+
+gate0_decision: AUTO_LATEST
+phase_minus1_decision: AUTO_LATEST
+workers: 16
+max_tasks_per_child: 1
+max_pivot_combinations: 100000
+real_lattice_n_max: 80
+max_backend_audit_tasks: 40
+
+# Complete legacy balls that were already observed to be inexpensive.
+audit_radius_multipliers: [1.25, 1.5]
+legacy_raw_solution_limit: 10000
+constrained_slice_vector_limit: 10000
+beta: 10
+scaling_c: 1.0
+r_elim: all
+pivot_strategy: min_activation_depth
+
+regimes:
+  - regime_id: dense_ternary
+    n: 12
+    m: 12
+    q: 17
+    r: 2
+    prior: ternary
+    H_class: dense_random
+  - regime_id: coded_ternary
+    n: 12
+    m: 12
+    q: 17
+    r: 2
+    prior: ternary
+    H_class: coded_dual_G_transpose
+    H_parameters: {puncturing_rule: prefix, alpha: 1}
+  - regime_id: dense_fixed
+    n: 12
+    m: 12
+    q: 17
+    r: 2
+    prior: {kind: fixed_weight, h_plus: 2, h_minus: 2}
+    H_class: dense_random
+  - regime_id: coded_fixed
+    n: 12
+    m: 12
+    q: 17
+    r: 2
+    prior: {kind: fixed_weight, h_plus: 2, h_minus: 2}
+    H_class: coded_dual_G_transpose
+    H_parameters: {puncturing_rule: prefix, alpha: 1}
+
+# Frozen one-shot confirmation template. It is materialized only after audit
+# PASS, with exact prerequisite/audit paths and SHA-256 values injected.
+formal_gate1c:
+  master_seed: 9753187
+  eligible_for_gate: true
+  smoke: false
+  workers: 16
+  max_tasks_per_child: 1
+  max_wall_time: 600
+  max_memory: 96GB
+  max_RSS: 6GB
+  max_candidates: 128
+  max_exact_states: 1000000
+  beta_max: 30
+  enumeration_node_limit: 2000000
+  max_slice_vectors_per_radius: 100000
+  max_radius_steps: 16
+  score_radius_squared_grid:
+    - 16
+    - 20
+    - 24
+    - 28
+    - 32
+    - 40
+    - 48
+    - 56
+    - 64
+    - 72
+    - 80
+    - 96
+    - 112
+    - 128
+    - 160
+    - 192
+  top_k_values: [16, 32, 64, 128]
+  primary_top_k: 128
+  beta: 10
+  r_elim: all
+  pivot_strategy: min_activation_depth
+  max_pivot_combinations: 100000
+  real_lattice_n_max: 80
+  bootstrap_seed: 29983
+  bootstrap_replicates: 4000
+  minimum_confirmation_instances_per_regime: 30
+  minimum_certified_top_k_rate: 1.0
+  minimum_true_presence_rate: 1.0
+  minimum_true_retention_rate: 1.0
+  minimum_false_candidates_per_regime: 300
+  maximum_candidate_alpha_ci_width: 0.20
+  gate1c_alpha_upper_max: 0.95
+  minimum_measurable_regimes: 2
+  minimum_measurable_H_classes: 2

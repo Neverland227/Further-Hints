@@ -36,6 +36,8 @@ this copy.
 | `candidates/mn_general.py:build_extended_basis` | MN Section 5.1, Eq. (20) | `LITERATURE_EXACT` | implemented and target-membership tested |
 | `construct_modular_sublattice` | MN Section 4.3 Algorithm 1, adapted as Section 5 directs to the modular block | basis logic: `LITERATURE_EXACT`; finite scaling grid: `LITERATURE_HEURISTIC` | optional fpylll path; zero block and transform recorded |
 | `bounded_schnorr_euchner` | standard GSO coefficient enumeration implemented locally to enforce an in-loop node cap | `PROJECT_DERIVATION` | optional fpylll GSO; exact integer norm recheck; node/radius/solution limits recorded |
+| `construct_constrained_slice_lattice`, `bounded_cvp_schnorr_euchner` | MN Section 5 embedding restricted to fixed `t=-1`; affine-kernel parameterization and bounded list-CVP traversal | exact embedding: `LITERATURE_EXACT`; slice/enumerator: `PROJECT_DERIVATION` | full hint elimination only; brute-force and complete legacy-ball equivalence tests; any resource-cap hit is censoring |
+| `canonical_b2_score_squared`, `MNConstrainedTopKCandidateSource` | canonical centered lifts plus project-defined certified ordering | `PROJECT_DERIVATION` | score/lexicographic deterministic ordering; public finite radius grid; no truth-norm or prior-outcome selection |
 | `baselines/no_hints.py` | standard no-hint `(-e,s,-1)` row embedding (MN Eq. (3) orientation) | `LITERATURE_EXACT` construction | B0 construction/certificate implemented; full measured solver remains optional |
 | `candidates/synthetic.py` | task-defined synthetic sources and matched-moment shell | synthetic sources: `PROJECT_DIAGNOSTIC`; shell: `PROJECT_PROXY / B2_PROXY` | implemented; proxy excluded from Gate 1 headline logic |
 | `diagnostics.py`, Phase-1 list summaries | task-defined large-q, projective, valuation, fixed-weight, and dependence checks | `PROJECT_DIAGNOSTIC` | coordinate histograms for q=3329; character/collision effect intervals; collinear joint rates; list-level overdispersion; CBD AUC/AP remain diagnostic |
@@ -54,6 +56,7 @@ this copy.
 | B0 no hints | `partial` | exact embedding/certificate exists; a full measured LLL/enumeration campaign is server-optional |
 | B1 rank-only elimination | `implemented` | exact affine elimination, with rank-only assumptions stated |
 | B2 MN general full-secret modular hints | `implemented_optional_backend` | exact basis, Algorithm-1 adaptation, bounded project enumeration, LLL/small BKZ, extraction, and costs; requires fpylll and complete resource-guarded runs |
+| B2 constrained certified top-K | `implemented_optional_backend_pending_server_audit` | fixed `t=-1` affine-slice list-CVP and canonical top-K are implemented; formal use is forbidden until all exposed-seed legacy-ball equivalence checks pass on fpylll |
 | B2 proxy | `implemented` | explicitly excluded from headline conclusions |
 | B3 rank-only plus exact prior | `implemented` | leaf predicate retains full prior coupling |
 | B4 norm-aware plus exact prior | `implemented_optional_backend` | paired postfilter on the same B2 candidate list |

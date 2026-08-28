@@ -19,14 +19,21 @@
    uniformity effects, projective clustering, valuations, and true retention.
    A B2 proxy can never pass Gate 1. Gate 1 resolves an actual latest Phase -1
    decision artifact; a YAML boolean cannot certify it.
-4. Phase 2 reads an explicit Gate-1 PASS file, selects each arm only on
+4. After the legacy geometry stop, the one-shot Gate-1c revision first audits
+   complete legacy balls against complete constrained `t=-1` balls on exposed
+   seeds. Only an all-pass audit materializes a hash-bound held-out config.
+   Formal Gate-1c uses certified canonical top-K lists; any resource truncation
+   blocks the backend, and a PASS claims marginal selectivity only.
+5. Phase 2 reads an explicit Gate-1 PASS file, selects each arm only on
    calibration seeds, freezes `confirmation_preregistration.json`, and then
    runs confirmation seeds. Resume never rewrites that selection. Parameter
    selection and confirmation use aggregate success probability, retaining
    failed candidate-recovery instances in expected-work accounting.
-5. Phase 3 runs only if Gate 2 is exactly
+   The current Phase-2 protocol is not valid directly after Gate-1c; any such
+   continuation requires a separately frozen reoptimized work frontier.
+6. Phase 3 runs only if Gate 2 is exactly
    `MEASURABLE SECURITY-ESTIMATOR EFFECT`.
-6. Phase 4 is estimator-only and labels every point outside empirical range as
+7. Phase 4 is estimator-only and labels every point outside empirical range as
    `EXTRAPOLATION`.
 
 ## Checkpoint behavior

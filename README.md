@@ -37,7 +37,18 @@ The B2 geometry command searches exactly eight preregistered, prior-blind
 list geometries. It never runs formal Gate 1 automatically. If it records
 `SELECTED`, review the run directory and launch the frozen command in
 `RUN_NEXT.md`; if it records `NO_ELIGIBLE_GEOMETRY`, stop without enlarging
-the grid.
+that legacy grid. The only authorized revision after that stop is the
+one-shot Gate-1c constrained-slice protocol:
+
+```bash
+python experiments/phase1c_backend_audit.py --config configs/phase1/gate1c_backend_audit.yaml
+```
+
+This first uses only exposed calibration seeds to compare complete legacy
+balls with complete fixed-`t=-1` balls. It does not evaluate prior outcomes.
+Only an all-pass audit writes a hash-bound held-out confirmation config and a
+separate command in `RUN_CONFIRMATION.md`. A resource-capped prefix is never
+called certified top-K.
 
 Phase 2 and Phase 3 require explicit gate-decision files from a non-smoke,
 gate-eligible run. They fail closed when the prerequisite is absent or does not
