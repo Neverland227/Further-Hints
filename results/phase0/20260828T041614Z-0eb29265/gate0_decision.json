@@ -1,0 +1,7 @@
+{
+  "gate": "Gate 0",
+  "status": "PASS",
+  "checks": 6,
+  "failures": 0,
+  "label": "EXACT THEOREM CHECK"
+}
