@@ -1,0 +1,28 @@
+master_seed: 314159
+max_wall_time: 300
+max_memory: 2GB
+max_candidates: 200
+max_exact_states: 200000
+beta_max: 30
+enumeration_node_limit: 10000
+calibration_seeds:
+- 1101
+confirmation_seeds:
+- 2101
+max_pivot_combinations: 10000
+cases:
+- n: 5
+  m: 6
+  q: 17
+  r: 2
+  prior: ternary
+  H_class: dense_random
+- n: 6
+  m: 7
+  q: 32
+  r: 2
+  prior:
+    kind: fixed_weight
+    h_plus: 1
+    h_minus: 1
+  H_class: coded_dual_G_transpose
