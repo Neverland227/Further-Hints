@@ -1,0 +1,12 @@
+{
+  "gate": "Gate 1",
+  "eligible_run": false,
+  "status": "NOT_EVALUATED_SMOKE",
+  "b2_groups": 0,
+  "b2_unavailable": false,
+  "requires_phase_minus1_consistency": true,
+  "phase_minus1_gate_verified": false,
+  "headline_proxy_excluded": true,
+  "rule": "measurable B2/B4 marginal selectivity, true retention, structured-H quantification, and Phase -1 direction",
+  "gate0_decision": "D:\\Further Hints\\research\\affine_prior\\results\\phase0\\20260828T034102Z-0eb29265\\gate0_decision.json"
+}
