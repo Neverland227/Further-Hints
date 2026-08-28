@@ -1,0 +1,7 @@
+H_class,case_index,eliminated_rows,hint_invariant_ok,instance_id,label,lwe_residual_identity_ok,m,n,pivot_indices,posterior_equivalence_ok,posterior_max_log_discrepancy,posterior_normalized_total_variation,prior,q,r,r_elim,reconstruction_ok,representation_invariance_ok,seed,solution_count,status
+dense_random,0,[],True,phase0-0-9119860573168689217,EXACT THEOREM CHECK,True,6,5,[],True,0.0,0.0,ternary,17,2,0,True,True,9119860573168689217,1,PASS
+dense_random,0,[0],True,phase0-0-9119860573168689217,EXACT THEOREM CHECK,True,6,5,[0],True,0.0,0.0,ternary,17,2,1,True,True,9119860573168689217,1,PASS
+dense_random,0,"[0, 1]",True,phase0-0-9119860573168689217,EXACT THEOREM CHECK,True,6,5,"[0, 1]",True,0.0,0.0,ternary,17,2,2,True,True,9119860573168689217,1,PASS
+coded_dual_G_transpose,1,[],True,phase0-1-11067244230190870355,EXACT THEOREM CHECK,True,7,6,[],True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 1, 'h_minus': 1}",32,2,0,True,True,11067244230190870355,4,PASS
+coded_dual_G_transpose,1,[0],True,phase0-1-11067244230190870355,EXACT THEOREM CHECK,True,7,6,[0],True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 1, 'h_minus': 1}",32,2,1,True,True,11067244230190870355,4,PASS
+coded_dual_G_transpose,1,"[0, 1]",True,phase0-1-11067244230190870355,EXACT THEOREM CHECK,True,7,6,"[0, 1]",True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 1, 'h_minus': 1}",32,2,2,True,True,11067244230190870355,4,PASS
