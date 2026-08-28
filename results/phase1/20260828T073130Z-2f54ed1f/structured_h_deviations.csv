@@ -1,0 +1,3 @@
+n,m,q,r,r_elim,r_check,prior,source,source_requested,evidence_label,H_class,comparison_estimable,dense_alpha,structured_alpha,alpha_difference_structured_minus_dense,alpha_ratio_structured_over_dense,difference_ci_low_conservative,difference_ci_high_conservative,comparison_design
+12,12,17,2,2,0,ternary,MNGeneralCandidateSource,mn_general,TOY REAL-LATTICE CANDIDATE DISTRIBUTION,coded_dual_G_transpose,False,,,,,,,independent list clusters; conservative interval-endpoint contrast
+12,12,17,2,2,0,"{""h_minus"": 2, ""h_plus"": 2, ""kind"": ""fixed_weight""}",MNGeneralCandidateSource,mn_general,TOY REAL-LATTICE CANDIDATE DISTRIBUTION,coded_dual_G_transpose,False,,,,,,,independent list clusters; conservative interval-endpoint contrast

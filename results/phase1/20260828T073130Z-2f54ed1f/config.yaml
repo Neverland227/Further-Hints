@@ -1,0 +1,63 @@
+master_seed: 1732050
+max_wall_time: 600
+max_memory: 96GB
+max_RSS: 10GB
+max_candidates: 1000
+max_exact_states: 1000000
+beta_max: 30
+enumeration_node_limit: 100000
+calibration_seeds:
+- 1401
+- 1402
+- 1403
+- 1404
+- 1405
+confirmation_seeds:
+- 2401
+- 2402
+- 2403
+- 2404
+- 2405
+eligible_for_gate: true
+smoke: false
+gate0_decision: AUTO_LATEST
+phase_minus1_decision: AUTO_LATEST
+instances: 30
+workers: 6
+max_tasks_per_child: 1
+bootstrap_seed: 9983
+bootstrap_replicates: 4000
+candidate_record_limit_per_list: 3
+max_pivot_combinations: 100000
+gate1_alpha_upper_max: 0.95
+gate1_min_H_classes: 2
+gate1_min_valid_alpha_lists: 30
+gate1_min_false_candidates_per_group: 300
+n:
+- 12
+m_over_n: 1.0
+q:
+- 17
+r:
+- 2
+r_elim:
+- all
+priors:
+- ternary
+- kind: fixed_weight
+  h_plus: 2
+  h_minus: 2
+H_classes:
+- dense_random
+- coded_dual_G_transpose
+H_parameters:
+  coded_dual_G_transpose:
+    puncturing_rule: prefix
+    alpha: 1
+sources:
+- mn_general
+pivot_strategy: min_activation_depth
+mn_scaling_c: 1.0
+beta: 10
+radius_multiplier: 1.1
+real_lattice_n_max: 80
