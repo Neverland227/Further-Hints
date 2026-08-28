@@ -1,0 +1,15 @@
+{
+  "protocol_role": "B2_GEOMETRY_CALIBRATION_ONLY",
+  "status": "SELECTED",
+  "selected_theta": {
+    "theta_id": "fixture",
+    "beta": 10,
+    "scaling_c": 1.0,
+    "radius_multiplier": 2.0,
+    "candidate_budget": 1000,
+    "r_elim": "all",
+    "pivot_strategy": "min_activation_depth"
+  },
+  "selection_uses_prior_pass_rate": false,
+  "prior_selectivity_evaluated": false
+}
