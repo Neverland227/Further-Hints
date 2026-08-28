@@ -1,0 +1,132 @@
+master_seed: 2468135
+max_wall_time: 600
+max_memory: 96GB
+max_RSS: 10GB
+max_candidates: 1000
+max_exact_states: 1000000
+beta_max: 30
+enumeration_node_limit: 100000
+
+# These five seeds may be used only for prior-blind geometry calibration.
+calibration_seeds: [5501, 5502, 5503, 5504, 5505]
+
+# These thirty seeds are reserved before calibration and are injected into the
+# generated Gate-1b config only after one geometry is selected.
+confirmation_seeds:
+  - 6501
+  - 6502
+  - 6503
+  - 6504
+  - 6505
+  - 6506
+  - 6507
+  - 6508
+  - 6509
+  - 6510
+  - 6511
+  - 6512
+  - 6513
+  - 6514
+  - 6515
+  - 6516
+  - 6517
+  - 6518
+  - 6519
+  - 6520
+  - 6521
+  - 6522
+  - 6523
+  - 6524
+  - 6525
+  - 6526
+  - 6527
+  - 6528
+  - 6529
+  - 6530
+
+gate0_decision: AUTO_LATEST
+phase_minus1_decision: AUTO_LATEST
+workers: 6
+max_tasks_per_child: 1
+max_pivot_combinations: 100000
+real_lattice_n_max: 80
+
+# Hard bounds prevent an after-the-fact expansion of the search.
+max_geometry_grid_points: 8
+max_geometry_calibration_tasks: 160
+radius_multiplier_max: 2.5
+
+selection:
+  minimum_rows_per_regime_theta: 5
+  minimum_true_candidate_presence_rate: 1.0
+  require_false_candidate_in_every_list: true
+  minimum_median_false_candidates: 10
+  maximum_median_false_candidates: 300
+  minimum_total_false_candidates_per_regime: 50
+
+regimes:
+  - regime_id: dense_ternary
+    n: 12
+    m: 12
+    q: 17
+    r: 2
+    prior: ternary
+    H_class: dense_random
+  - regime_id: coded_ternary
+    n: 12
+    m: 12
+    q: 17
+    r: 2
+    prior: ternary
+    H_class: coded_dual_G_transpose
+    H_parameters: {puncturing_rule: prefix, alpha: 1}
+  - regime_id: dense_fixed
+    n: 12
+    m: 12
+    q: 17
+    r: 2
+    prior: {kind: fixed_weight, h_plus: 2, h_minus: 2}
+    H_class: dense_random
+  - regime_id: coded_fixed
+    n: 12
+    m: 12
+    q: 17
+    r: 2
+    prior: {kind: fixed_weight, h_plus: 2, h_minus: 2}
+    H_class: coded_dual_G_transpose
+    H_parameters: {puncturing_rule: prefix, alpha: 1}
+
+# Exactly 2 x 1 x 4 x 1 x 1 x 1 = 8 preregistered geometries.
+grid:
+  beta: [10, 20]
+  scaling_c: [1.0]
+  radius_multiplier: [1.25, 1.5, 2.0, 2.5]
+  candidate_budget: [1000]
+  r_elim: [all]
+  pivot_strategy: [min_activation_depth]
+
+# Template for the separately launched formal run. Geometry fields and exact
+# prerequisite paths are injected into gate1b_config.yaml by the calibrator.
+formal_gate:
+  master_seed: 9753186
+  eligible_for_gate: true
+  smoke: false
+  instances: 30
+  bootstrap_seed: 19983
+  bootstrap_replicates: 4000
+  candidate_record_limit_per_list: 3
+  gate1_alpha_upper_max: 0.95
+  gate1_min_H_classes: 2
+  gate1_min_valid_alpha_lists: 30
+  gate1_min_false_candidates_per_group: 300
+  n: [12]
+  m_over_n: 1.0
+  q: [17]
+  r: [2]
+  priors:
+    - ternary
+    - {kind: fixed_weight, h_plus: 2, h_minus: 2}
+  H_classes: [dense_random, coded_dual_G_transpose]
+  H_parameters:
+    coded_dual_G_transpose: {puncturing_rule: prefix, alpha: 1}
+  sources: [mn_general]
