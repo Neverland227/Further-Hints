@@ -1,0 +1,18 @@
+{
+  "gate": "Gate 1",
+  "eligible_run": true,
+  "status": "FAIL_NO_MARGINAL_EFFECT",
+  "b2_groups": 4,
+  "b2_unavailable": false,
+  "b2_failure_count": 0,
+  "b2_H_classes": 2,
+  "b2_true_candidate_presence_rate_min": 1.0,
+  "b2_true_retention_conditional": true,
+  "theoretical_true_retention_of_exact_predicate": 1.0,
+  "requires_phase_minus1_consistency": true,
+  "phase_minus1_gate_verified": true,
+  "phase_minus1_decision": "/home/ubuntu/Further Hints/research/affine_prior/results/phase_minus1/20260828T064418Z-8930fbee/gate_minus1_decision.json",
+  "headline_proxy_excluded": true,
+  "rule": "measurable B2/B4 marginal selectivity, true retention, structured-H quantification, and Phase -1 direction",
+  "gate0_decision": "/home/ubuntu/Further Hints/research/affine_prior/results/phase0/20260828T064422Z-92f077d1/gate0_decision.json"
+}
