@@ -1,0 +1,23 @@
+master_seed: 2449490
+max_wall_time: 600
+max_memory: 8GB
+max_candidates: 1000
+max_exact_states: 1000000
+beta_max: 30
+enumeration_node_limit: 100000
+calibration_seeds: [5101]
+confirmation_seeds: [6101]
+gate2_decision: AUTO_LATEST
+max_factor_states: 1000000
+max_treewidth: 12
+max_assignments: 10000
+cases:
+  - {seed: 5101, n: 12, m: 12, q: 17, r: 3, prior: ternary, H_class: row_sparse, H_parameters: {row_weight: 3}}
+  - n: 14
+    m: 14
+    q: 17
+    r: 3
+    prior: {kind: fixed_weight, h_plus: 2, h_minus: 2}
+    H_class: banded
+    H_parameters: {bandwidth: 2}
+
