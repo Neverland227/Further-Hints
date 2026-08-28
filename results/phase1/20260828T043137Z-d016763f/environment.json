@@ -1,0 +1,19 @@
+{
+  "cpu": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+  "dependency_versions": {
+    "fpylll": null,
+    "matplotlib": "3.9.2",
+    "networkx": "3.3",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "psutil": "5.9.0",
+    "scipy": "1.13.1",
+    "sympy": "1.13.2",
+    "yaml": "6.0.1"
+  },
+  "hostname": "LAPTOP-SJJ9V2KC",
+  "logical_cpu_count": 16,
+  "platform": "Windows-10-10.0.19045-SP0",
+  "python_version": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]",
+  "ram_bytes": 17040195584
+}
