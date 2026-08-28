@@ -1,0 +1,28 @@
+master_seed: 2236067
+max_wall_time: 900
+max_memory: 96GB
+max_RSS: 10GB
+max_candidates: 3000
+max_exact_states: 1000000
+beta_max: 30
+enumeration_node_limit: 500000
+calibration_seeds: [3101, 3102, 3103, 3104, 3105]
+confirmation_seeds: [4101, 4102, 4103, 4104, 4105, 4106, 4107, 4108, 4109, 4110, 4111, 4112, 4113, 4114, 4115, 4116, 4117, 4118, 4119, 4120, 4121, 4122, 4123, 4124, 4125, 4126, 4127, 4128, 4129, 4130, 4131, 4132, 4133, 4134, 4135, 4136, 4137, 4138, 4139, 4140, 4141, 4142, 4143, 4144, 4145, 4146, 4147, 4148, 4149, 4150]
+gate1_decision: AUTO_LATEST
+workers: 6
+bootstrap_seed: 9984
+bootstrap_replicates: 4000
+minimum_calibration_rows_per_theta: 5
+minimum_confirmation_pairs: 30
+max_pivot_combinations: 100000
+n: [24, 32]
+regimes:
+  - {regime_id: dense24, n: 24, m: 24, q: 97, r: 2, prior: ternary, H_class: dense_random}
+  - {regime_id: coded24, n: 24, m: 24, q: 97, r: 2, prior: ternary, H_class: coded_dual_G_transpose}
+grid:
+  beta: [10, 20]
+  scaling_c: [1.0]
+  radius_multiplier: [1.0, 1.15]
+  candidate_budget: [100, 300]
+  r_elim: [1, 2]
+  pivot_strategy: [first_unit_minor, min_activation_depth]
