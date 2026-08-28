@@ -1,0 +1,59 @@
+master_seed: 314159
+max_wall_time: 1200
+max_memory: 4GB
+max_candidates: 1000
+max_exact_states: 2000000
+beta_max: 30
+enumeration_node_limit: 100000
+calibration_seeds:
+- 1101
+- 1102
+- 1103
+confirmation_seeds:
+- 2101
+- 2102
+- 2103
+max_pivot_combinations: 100000
+cases:
+- n: 7
+  m: 8
+  q: 17
+  r: 3
+  prior: ternary
+  H_class: dense_random
+- n: 7
+  m: 8
+  q: 31
+  r: 3
+  prior: ternary
+  H_class: systematic_random
+- n: 6
+  m: 7
+  q: 32
+  r: 2
+  prior: cbd2
+  H_class: row_sparse
+- n: 6
+  m: 7
+  q: 256
+  r: 2
+  prior: cbd2
+  H_class: banded
+- n: 8
+  m: 9
+  q: 17
+  r: 3
+  prior:
+    kind: fixed_weight
+    h_plus: 2
+    h_minus: 2
+  H_class: block_local
+- n: 8
+  m: 9
+  q: 31
+  r: 3
+  prior:
+    kind: fixed_weight
+    h_plus: 2
+    h_minus: 2
+  H_class: coded_dual_G_transpose

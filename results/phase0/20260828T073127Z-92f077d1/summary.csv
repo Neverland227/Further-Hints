@@ -1,0 +1,23 @@
+H_class,case_index,eliminated_rows,hint_invariant_ok,instance_id,label,lwe_residual_identity_ok,m,n,pivot_indices,posterior_equivalence_ok,posterior_max_log_discrepancy,posterior_normalized_total_variation,prior,q,r,r_elim,reconstruction_ok,representation_invariance_ok,seed,solution_count,status
+dense_random,0,[],True,phase0-0-9119860573168689217,EXACT THEOREM CHECK,True,8,7,[],True,0.0,0.0,ternary,17,3,0,True,True,9119860573168689217,1,PASS
+dense_random,0,[0],True,phase0-0-9119860573168689217,EXACT THEOREM CHECK,True,8,7,[0],True,0.0,0.0,ternary,17,3,1,True,True,9119860573168689217,1,PASS
+dense_random,0,"[0, 1]",True,phase0-0-9119860573168689217,EXACT THEOREM CHECK,True,8,7,"[0, 2]",True,0.0,0.0,ternary,17,3,2,True,True,9119860573168689217,1,PASS
+dense_random,0,"[0, 1, 2]",True,phase0-0-9119860573168689217,EXACT THEOREM CHECK,True,8,7,"[0, 1, 2]",True,0.0,0.0,ternary,17,3,3,True,True,9119860573168689217,1,PASS
+systematic_random,1,[],True,phase0-1-11067244230190870355,EXACT THEOREM CHECK,True,8,7,[],True,0.0,0.0,ternary,31,3,0,True,True,11067244230190870355,1,PASS
+systematic_random,1,[0],True,phase0-1-11067244230190870355,EXACT THEOREM CHECK,True,8,7,[0],True,0.0,0.0,ternary,31,3,1,True,True,11067244230190870355,1,PASS
+systematic_random,1,"[0, 1]",True,phase0-1-11067244230190870355,EXACT THEOREM CHECK,True,8,7,"[0, 1]",True,0.0,0.0,ternary,31,3,2,True,True,11067244230190870355,1,PASS
+systematic_random,1,"[0, 1, 2]",True,phase0-1-11067244230190870355,EXACT THEOREM CHECK,True,8,7,"[0, 1, 2]",True,0.0,0.0,ternary,31,3,3,True,True,11067244230190870355,1,PASS
+row_sparse,2,[],True,phase0-2-13581628599474927357,EXACT THEOREM CHECK,True,7,6,[],True,0.0,0.0,cbd2,32,2,0,True,True,13581628599474927357,20,PASS
+row_sparse,2,[0],True,phase0-2-13581628599474927357,EXACT THEOREM CHECK,True,7,6,[0],True,0.0,0.0,cbd2,32,2,1,True,True,13581628599474927357,20,PASS
+row_sparse,2,"[0, 1]",True,phase0-2-13581628599474927357,EXACT THEOREM CHECK,True,7,6,"[0, 1]",True,0.0,0.0,cbd2,32,2,2,True,True,13581628599474927357,20,PASS
+banded,3,[],True,phase0-3-6478029529697794273,EXACT THEOREM CHECK,True,7,6,[],True,0.0,0.0,cbd2,256,2,0,True,True,6478029529697794273,5,PASS
+banded,3,[0],True,phase0-3-6478029529697794273,EXACT THEOREM CHECK,True,7,6,[0],True,0.0,0.0,cbd2,256,2,1,True,True,6478029529697794273,5,PASS
+banded,3,"[0, 1]",True,phase0-3-6478029529697794273,EXACT THEOREM CHECK,True,7,6,"[0, 2]",True,0.0,0.0,cbd2,256,2,2,True,True,6478029529697794273,5,PASS
+block_local,4,[],True,phase0-4-2306297722203931688,EXACT THEOREM CHECK,True,9,8,[],True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 2, 'h_minus': 2}",17,3,0,True,True,2306297722203931688,1,PASS
+block_local,4,[0],True,phase0-4-2306297722203931688,EXACT THEOREM CHECK,True,9,8,[0],True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 2, 'h_minus': 2}",17,3,1,True,True,2306297722203931688,1,PASS
+block_local,4,"[0, 1]",True,phase0-4-2306297722203931688,EXACT THEOREM CHECK,True,9,8,"[0, 1]",True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 2, 'h_minus': 2}",17,3,2,True,True,2306297722203931688,1,PASS
+block_local,4,"[0, 1, 2]",True,phase0-4-2306297722203931688,EXACT THEOREM CHECK,True,9,8,"[0, 1, 2]",True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 2, 'h_minus': 2}",17,3,3,True,True,2306297722203931688,1,PASS
+coded_dual_G_transpose,5,[],True,phase0-5-13942507240768659517,EXACT THEOREM CHECK,True,9,8,[],True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 2, 'h_minus': 2}",31,3,0,True,True,13942507240768659517,30,PASS
+coded_dual_G_transpose,5,[0],True,phase0-5-13942507240768659517,EXACT THEOREM CHECK,True,9,8,[0],True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 2, 'h_minus': 2}",31,3,1,True,True,13942507240768659517,30,PASS
+coded_dual_G_transpose,5,"[0, 1]",True,phase0-5-13942507240768659517,EXACT THEOREM CHECK,True,9,8,"[0, 1]",True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 2, 'h_minus': 2}",31,3,2,True,True,13942507240768659517,30,PASS
+coded_dual_G_transpose,5,"[0, 1, 2]",True,phase0-5-13942507240768659517,EXACT THEOREM CHECK,True,9,8,"[0, 1, 2]",True,0.0,0.0,"{'kind': 'fixed_weight', 'h_plus': 2, 'h_minus': 2}",31,3,3,True,True,13942507240768659517,30,PASS
