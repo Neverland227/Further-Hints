@@ -1,0 +1,8 @@
+{
+  "gate": "Gate -1",
+  "eligible_run": true,
+  "status": "PASS",
+  "regions_with_two_or_more_same-direction_models": 90,
+  "rule": "two or more d_eff models predict a positive integer beta change in a toy-scale region",
+  "evidence_label": "HEURISTIC ESTIMATOR"
+}

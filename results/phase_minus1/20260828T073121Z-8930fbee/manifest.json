@@ -1,0 +1,38 @@
+{
+  "command_line": [
+    "experiments/phase_minus1_estimator.py",
+    "--config",
+    "configs/phase_minus1/default.yaml"
+  ],
+  "config_hash": "8930fbee0aa9d3d3b5afb8928c280f4f3e5ab0ec24663f94ed2808f479a1687a",
+  "cpu": "x86_64",
+  "dependency_versions": {
+    "fpylll": "0.6.4",
+    "matplotlib": "3.11.1",
+    "networkx": "3.6.1",
+    "numpy": "2.5.2",
+    "pandas": "3.0.5",
+    "psutil": "7.2.2",
+    "scipy": "1.18.1",
+    "sympy": "1.14.0",
+    "yaml": "6.0.3"
+  },
+  "derived_seeds": {
+    "master_seed": 271828
+  },
+  "dirty_state": false,
+  "git_commit": "3973fc12a7b0a538b76d7d58f885fec0caa275ae",
+  "hostname": "VM-0-4-ubuntu",
+  "logical_cpu_count": 64,
+  "master_seed": 271828,
+  "peak_rss_bytes": 207138816,
+  "phase": "phase_minus1",
+  "python_version": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "ram_bytes": 132129501184,
+  "run_id": "20260828T073121Z-8930fbee",
+  "schema_version": 1,
+  "source_tree_sha256": "070f0538404bffe54c23355c66a591d452ea0777d9e76a6cbc87b98c2092fd01",
+  "status": "COMPLETED",
+  "timestamp_utc": "2026-08-28T07:31:26.626057+00:00",
+  "wall_clock_seconds": 3.845547670999622
+}
