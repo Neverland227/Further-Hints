@@ -1,0 +1,39 @@
+{
+  "command_line": [
+    "experiments/phase0_exact.py",
+    "--config",
+    "configs/phase0/smoke.yaml"
+  ],
+  "config_hash": "0eb29265b0de53d00df05af59d088bb596ae641063ea38d24f42a5f1e7180f67",
+  "cpu": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+  "dependency_versions": {
+    "fpylll": null,
+    "matplotlib": "3.9.2",
+    "networkx": "3.3",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "psutil": "5.9.0",
+    "scipy": "1.13.1",
+    "sympy": "1.13.2",
+    "yaml": "6.0.1"
+  },
+  "derived_seeds": [
+    9119860573168689217,
+    11067244230190870355
+  ],
+  "dirty_state": null,
+  "git_commit": null,
+  "hostname": "LAPTOP-SJJ9V2KC",
+  "logical_cpu_count": 16,
+  "master_seed": 314159,
+  "peak_rss_bytes": 155811840,
+  "phase": "phase0",
+  "python_version": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]",
+  "ram_bytes": 17040195584,
+  "run_id": "20260828T043130Z-0eb29265",
+  "schema_version": 1,
+  "source_tree_sha256": "d3061473d811334ce938f2187157518cde1ee35e638c33a27c553c803b3a55ee",
+  "status": "COMPLETED",
+  "timestamp_utc": "2026-08-28T04:31:31.989028+00:00",
+  "wall_clock_seconds": 0.26599999999962165
+}
